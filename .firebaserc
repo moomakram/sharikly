@@ -1,0 +1,11 @@
+{
+  "projects": {
+    "default": "sharikly-project",
+    "sharikly-": "sharikly-project",
+    "sharikly-project": "sharikly-project",
+    "sharikly": "sharikly",
+    "main": "sharikly"
+  },
+  "targets": {},
+  "etags": {}
+}

@@ -1,6 +1,6 @@
 // src/pages/AdminRequests.jsx
 import React, { useEffect, useState } from 'react';
-import { db } from '../firebase';
+import { db } from '../firebase/firebase'; // تحديث المسار
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 
@@ -64,7 +64,20 @@ const AdminRequests = () => {
             {requests.map((req, index) => (
               <tr key={req.id}>
                 <td>{index + 1}</td>
-                <td style={{ whiteSpace: 'pre-wrap' }}>{req.details}</td>
+                <td style={{ whiteSpace: 'pre-wrap' }}>
+                  {req.details}
+                  {req.file && (
+                    req.fileType.startsWith('image') ? (
+                      <img src={req.file} alt="request file" style={{ maxWidth: '100px', marginLeft: '10px' }} />
+                    ) : req.fileType.startsWith('video') ? (
+                      <video controls src={req.file} style={{ maxWidth: '100px', marginLeft: '10px' }}></video>
+                    ) : (
+                      <a href={req.file} target="_blank" rel="noopener noreferrer" style={{ marginLeft: '10px' }}>
+                        Download File
+                      </a>
+                    )
+                  )}
+                </td>
                 <td style={{ wordBreak: 'break-all' }}>{req.chatId}</td>
                 <td>
                   {req.timestamp?.toDate

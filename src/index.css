@@ -7,8 +7,43 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+body.dark-mode {
+  background-color: #121212 !important;
+  color: #e0e0e0 !important;
+}
+
+body.light-mode {
+  background-color: #ffffff !important;
+  color: #333333 !important;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
 
+.dark-mode {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+/* يمكنك تعديل المزيد من العناصر حسب الحاجة */
+.navbar.dark-mode {
+  background-color: #1f1f1f;
+  /* وغيرها من الإعدادات */
+}
+
+.unread-row {
+  background-color: #ffe082 !important; /* لون أصفر فاتح لتمييز الرسائل غير المقروءة */
+}
+
+@keyframes blink-row {
+  0% { background-color: #fff176; }
+  100% { background-color: #ffe082; }
+}
+
+/* تعريف جديد للصفوف غير المقروءة */
+tr.unread-row-eye > td {
+  background-color: #fff700 !important; /* أصفر فاقع وواضح جداً */
+  border-left: 6px solid #ff9800 !important;
+}

@@ -1,289 +1,386 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { FaSun, FaMoon } from 'react-icons/fa';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import './Home.css';
-
+import Typewriter from 'typewriter-effect';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+import { FaStar, FaDraftingCompass } from 'react-icons/fa';
+import LanguageSelector from '../components/LanguageSelector';
 import mainImage from '../images/acd0698c-8b14-4b99-8441-225002664d7f.jpg';
+import DynamicText from '../components/DynamicText';
+import { useTheme } from '../context/ThemeContext';
+import videoImg from '../images/57316546-552d-4281-a6a4-814faf3a4feb.jpg';
+import engineeringImg from '../images/1760d4e5-a94e-4c08-a967-e38b205f389b.jpg';
+import graphicsImg from '../images/f2d8768f-2b2e-4de4-857b-4f87805827f1.jpg';
+import uiuxImg from '../images/49b56c2a-e39b-4abb-ba93-750a95ed0ab0.jpg';
+import programmingImg from '../images/d2912c92-4528-489d-ab82-bde57f7a2a48.jpg';
+
+const smoothScrollTo = (element, duration = 1800) => {
+  if (!element) return;
+  const targetPosition = element.getBoundingClientRect().top + window.pageYOffset;
+  const startPosition = window.pageYOffset;
+  const distance = targetPosition - startPosition;
+  let startTime = null;
+
+  const easeInOutCubic = (t, b, c, d) => {
+    t /= d / 2;
+    if (t < 1) return (c / 2) * t * t * t + b;
+    t -= 2;
+    return (c / 2) * (t * t * t + 2) + b;
+  };
+
+  const animation = (currentTime) => {
+    if (startTime === null) startTime = currentTime;
+    const timeElapsed = currentTime - startTime;
+    const run = easeInOutCubic(timeElapsed, startPosition, distance, duration);
+    window.scrollTo(0, run);
+    if (timeElapsed < duration) requestAnimationFrame(animation);
+  };
+
+  requestAnimationFrame(animation);
+};
 
 const Home = () => {
-  const [darkMode, setDarkMode] = useState(false);
-  const [textColor, setTextColor] = useState('black'); // اللون الافتراضي
-  const [showSentence, setShowSentence] = useState(true); // حالة للتحكم في ظهور الجملة
+  const { darkMode } = useTheme();
   const navigate = useNavigate();
+  const featuresRef = useRef(null);
+  const companyFeaturesRef = useRef(null);
+  const { t, i18n } = useTranslation();
 
-  // تغيير لون النص كل 5 ثوانٍ
   useEffect(() => {
-    const colors = ['red', 'blue', 'green', 'purple', 'orange'];
-    let colorIndex = 0;
+    AOS.init({ duration: 1000 });
+    const savedLanguage = localStorage.getItem('language') || 'en'; // Default to English if no language is saved
+    i18n.changeLanguage(savedLanguage);
+  }, [i18n]);
 
-    const interval = setInterval(() => {
-      setTextColor(colors[colorIndex]);
-      colorIndex = (colorIndex + 1) % colors.length; // التكرار على الألوان
-    }, 5000);
-
-    return () => clearInterval(interval); // تنظيف عند إلغاء المكون
-  }, []);
-
-  // التحكم في ظهور واختفاء الجملة
   useEffect(() => {
-    if (!showSentence) {
-      const timeout = setTimeout(() => {
-        setShowSentence(true); // إعادة إظهار الجملة بعد الاختفاء
-      }, 1000); // مدة الاختفاء قبل إعادة العرض
-      return () => clearTimeout(timeout); // تنظيف عند إلغاء المكون
-    }
-  }, [showSentence]);
+    const handleLangChange = (lng) => {
+      // إعادة تحميل الصفحة عند تغيير اللغة
+      window.location.reload();
+    };
+    i18n.on('languageChanged', handleLangChange);
+    return () => {
+      i18n.off('languageChanged', handleLangChange);
+    };
+  }, [i18n]);
 
   const services = [
-    { name: 'البرمجة', path: '/programming', icon: '💻', image: require('../images/fe0429fc-4457-4213-aba7-7227532573f5.jpg') },
-    { name: 'تصميم واجهات المستخدم', path: '/uiux', icon: '🎨', image: require('../images/df04e591-2aa9-4e02-a8d6-f0f850577298.jpg') },
-    { name: 'الجرافيك', path: '/graphic', icon: '🖌️', image: require('../images/8ed6bebf-cff1-4cf9-bc9e-41a189a9f712.jpg') },
-    { name: 'الفيديو والمونتاج', path: '/video', icon: '🎥', image: require('../images/c6f82d64-0c3e-4bdc-9f62-fadbb804d03b.jpg') },
-    { name: 'التصميم الهندسي', path: '/engineering', icon: '📐', image: require('../images/4b1bc2bd-f686-49ec-a82f-931d1ce05213.jpg') },
+    { name: t('programming_chat'), path: '/programming', icon: '💻', image: uiuxImg }, // استخدم صورة تصميم الواجهات هنا
+    { name: t('uiux_design'), path: '/uiux', icon: '🎨', image: programmingImg },      // استخدم صورة البرمجة هنا
+    { name: t('graphics'), path: '/graphic', icon: '🖌️', image: graphicsImg },
+    { name: t('video_editing'), path: '/video', icon: '🎥', image: videoImg },
+    { name: t('engineering_design'), path: '/engineering', icon: <FaDraftingCompass color="#007bff" />, image: engineeringImg },
   ];
 
-  const sentence = "إن الله يحب إذا عمل أحدكم عملاً أن يتقنه.";
-
   return (
-    <div className={`min-vh-100 d-flex flex-column ${darkMode ? 'bg-dark text-white' : 'bg-light text-dark'}`}>
-      {/* Navbar */}
-      <nav className={`navbar navbar-expand-lg ${darkMode ? 'navbar-dark bg-dark' : 'navbar-light bg-light'}`} style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)' }}>
-        <div className="container-fluid">
-          <Link className="navbar-brand" to="/">Sharikly</Link>
-          <div className="mx-auto text-center">
-            <motion.div
-              className="navbar-text"
-              initial="hidden"
-              animate="visible"
-              variants={{
-                hidden: { opacity: 0 },
-                visible: {
-                  opacity: 1,
-                  transition: {
-                    staggerChildren: 0.3,
-                    repeat: Infinity,
-                    repeatDelay: 4,
-                  },
-                },
-              }}
-            >
-              {'Sharikly – We devour the peaks and lead success with a spirit that knows no limits 🐺💥'.split(' ').map((word, index) => (
-                <motion.span
-                  key={index}
-                  style={{ display: 'inline-block', marginRight: '5px' }}
-                  variants={{
-                    hidden: { opacity: 0, y: 20 },
-                    visible: { opacity: 1, y: 0 },
-                  }}
-                >
-                  {word}
-                </motion.span>
-              ))}
-            </motion.div>
-          </div>
-          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span className="navbar-toggler-icon"></span>
-          </button>
-          <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="navbar-nav ms-auto">
-              <li className="nav-item">
-                <Link className="nav-link" to="/admin-login">دخول الأدمن</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/supervisor-login">دخول المشرف</Link>
-              </li>
-              <li className="nav-item">
-                <button className="btn btn-outline-primary ms-3" onClick={() => setDarkMode((prev) => !prev)}>
-                  {darkMode ? <FaSun /> : <FaMoon />}
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
-
-      {/* Main Layout */}
-      <div className="d-flex justify-content-between align-items-start flex-wrap">
-
-        {/* Cards on the right */}
-        <div className={`cards-container ${darkMode ? 'dark-mode' : ''}`}>
-          {services.slice(3).map((service, index) => (
-            <motion.div
-              key={service.name}
-              className="card-item mb-3"
-              initial={{ x: '-100vw' }}
-              animate={{ x: 0 }}
-              transition={{ delay: index * 0.3, type: 'spring', stiffness: 50 }}
-              onClick={() => navigate(service.path)}
-            >
-              <div className="card shadow-sm text-center h-100">
-                <div className="card-header">{service.icon} {service.name}</div>
-                <div className="card-body" style={{
-                  backgroundImage: `url(${service.image})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }} />
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Text Section */}
-        <div className="text-section mx-4 my-4" style={{ flex: '1', maxWidth: '220px', marginTop: '40px' }}>
+    <div className={`${darkMode ? 'bg-dark text-white' : 'bg-light text-dark'}`} style={{ minHeight: '100vh' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 18px 0 18px' }}>
+        <LanguageSelector />
+        <span style={{
+          fontWeight: 'bold',
+          fontSize: 15,
+          color: darkMode ? '#ffe082' : '#0d6efd',
+          letterSpacing: 0.5,
+          userSelect: 'none'
+        }}>
+          {t('choose_language') || 'اختر اللغة'}
+        </span>
+      </div>
+      <div className="container py-4">
+        <div
+          className={`min-vh-100 d-flex flex-column ${darkMode ? 'bg-dark text-white' : 'bg-light text-dark'}`}
+          style={{ position: 'relative', overflow: 'hidden' }}
+        >
           <div
-            className="motion-div"
+            className="background-animation"
             style={{
-              textAlign: 'left', // تغيير المحاذاة إلى اليسار
-              direction: 'rtl',
-              fontSize: '1.5rem',
-              fontWeight: 'bold',
-              color: textColor,
-              marginLeft: '20px', // إضافة مسافة من اليسار
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              zIndex: -1,
+              background: 'linear-gradient(120deg, rgba(255, 0, 150, 0.5), rgba(0, 204, 255, 0.5))',
+              animation: 'gradientAnimation 10s infinite',
             }}
-          >
-            {showSentence && (
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                variants={{
-                  hidden: { opacity: 0 }, // البداية: الجملة مخفية
-                  visible: {
-                    opacity: 1, // الجملة مرئية
-                    transition: {
-                      staggerChildren: 0.5, // ظهور الكلمات واحدة تلو الأخرى
-                      delayChildren: 0, // بدون تأخير أولي
-                    },
-                  },
-                }}
-                onAnimationComplete={() => {
-                  setTimeout(() => {
-                    setShowSentence(false); // إخفاء الجملة بعد 9 ثوانٍ
-                  }, 9000);
-                }}
-              >
-                {sentence.split(" ").map((word, index) => (
-                  <motion.span
-                    key={index}
-                    style={{ display: 'inline-block', marginRight: '5px' }}
-                    variants={{
-                      hidden: { opacity: 0, y: 20 }, // البداية: غير مرئية ومنخفضة قليلاً
-                      visible: { opacity: 1, y: 0 }, // النهاية: مرئية وفي مكانها
-                    }}
-                  >
-                    {word}
-                  </motion.span>
-                ))}
-              </motion.div>
-            )}
-          </div>
-          <p style={{ fontSize: '0.9rem', lineHeight: '1.4' }}>
-            هذا ما تسعي إليه الشركه لإرضاء الله ثم العميل
-          </p>
-          
-          <h4 className="mt-3" style={{ fontSize: '1.1rem' }}>*ميزات الشركه*</h4>
-          <ul style={{ paddingLeft: '8px', fontSize: '0.85rem', lineHeight: '1.4' }}>
-            <li>لا تحتاج منك تسجيل دخول بالبريد الالكتروني، فمجرد تحدثك في الشات أو إرسال طلبك يتخزن في قاعدة البيانات ب<strong> Id </strong>فريد ويتم حفظ الشات أيضاً على هاتفك.</li>
-            <li>لا نطلب منك 20% على إجراء العمل مثل بعض الشركات، بل إذا عدت مرة أخرى يخصم لك 10%، يعني وفرت <strong>%30</strong>.</li>
-            <li>لدينا موظفون متخصصون في هذه المجالات، وعليهم ليدر تيم لمراجعة عملك ليكون كما تريد وأفضل.</li>
-            <li>لدينا خدمة عملاء مميزة للرد عليك، وإذا أردت التعديل تحدث في الشات 😊👌.</li>
-          </ul>
-        </div>
+          ></div>
 
-        {/* Central Full Image with Title */}
-        <div className="text-center my-4 central-image-wrapper d-flex flex-wrap justify-content-center align-items-center" style={{ position: 'relative' }}>
-          {/* الصورة والعنوان داخل نفس الـ div */}
-          <div 
-            className="image-and-title-wrapper" 
-            style={{
-              position: 'relative', // لجعل المحتوى يتحرك كوحدة واحدة
-              textAlign: 'center',
-              transform: 'translate(-10%, -10%)', // تحريك العنصر للأعلى ولليسار
-              marginTop: '-490px', // رفع العنصر للأعلى قليلاً
-              marginLeft: '-20px', // تحريك العنصر لليسار قليلاً
-            }}
-          >
-            {/* النصوص */}
-            <div 
-              className="image-title-wrapper" 
-              style={{ 
-                marginBottom: '20px', // مسافة بين النصوص والصورة
-                color: darkMode ? 'white' : 'black', 
-                fontWeight: 'bold',
-              }}
-            >
-              <h2 style={{ fontSize: '1.5rem', marginBottom: '0.3rem' }}>Sharikly! مرحباً بك في</h2>
-              <h3 style={{ fontSize: '1rem' }}>اختر خدمتك وابدأ التحدث عبر الشات</h3>
+          <div className="d-flex flex-nowrap justify-content-around align-items-start" style={{ overflowX: 'auto', padding: '1rem' }}>
+            <div className={`cards-container ${darkMode ? 'dark-mode' : ''}`}>
+              {services.slice(3).map((service, index) => (
+                <motion.div
+                  key={service.name}
+                  className="card-item mb-3"
+                  initial={{ x: '-100vw' }}
+                  animate={{ x: 0 }}
+                  transition={{ delay: index * 0.3, type: 'spring', stiffness: 50 }}
+                  whileHover={{ scale: 1.1 }}
+                  onClick={() => navigate(service.path)}
+                  data-aos="fade-up"
+                >
+                  <div className="card shadow-sm text-center h-100" style={{ transition: 'transform 0.3s ease-in-out' }}>
+                    <div className="card-header" style={{ fontSize: 'clamp(1.1rem, 2vw, 1.5rem)', fontWeight: 'bold' }}>
+                      {service.icon}{' '}
+                      <span style={{ display: 'inline-block', minWidth: 80 }}>
+                        {service.name}
+                      </span>
+                    </div>
+                    <div
+                      className="card-body"
+                      style={{
+                        backgroundImage: `url(${service.image})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        borderRadius: '10px',
+                        transition: 'transform 0.3s ease-in-out',
+                      }}
+                    />
+                  </div>
+                </motion.div>
+              ))}
             </div>
 
-            {/* الصورة */}
-            <motion.img
-              src={mainImage}
-              alt="Main visual"
-              className="central-image"
-              style={{
-                width: '80%', // عرض الصورة يتكيف مع الشاشة
-                maxWidth: '350px', // الحد الأقصى لعرض الصورة
-                height: 'auto', // الحفاظ على نسبة العرض إلى الارتفاع
-                margin: '0 auto', // توسيط الصورة
-              }}
-              initial={{ y: 0 }} // البداية
-              animate={{ y: 0 }} // إزالة التحرك العمودي
-              transition={{ duration: 1, type: 'spring', stiffness: 50 }} // مدة الحركة ونوعها
-            />
-          </div>
-
-          {/* النصوص على يمين الصورة */}
-          <div 
-            className="wolf-description" 
-            style={{
-              flex: '1',
-              maxWidth: '400px',
-              marginLeft: '20px', // مسافة بين النص والصورة
-              textAlign: 'right', // محاذاة النص إلى اليمين
-              fontSize: '1rem',
-              lineHeight: '1.6',
-              color: darkMode ? 'white' : 'black',
-            }}
-          >
-            <h4 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem' }}>لماذا اخترنا الذئب لوجو؟ 🤔</h4>
-            <p>الذئب يُعرف بعدة صفات مميزة جعلته رمزًا في الثقافات والقصص، ومنها:</p>
-            <ul style={{ paddingLeft: '1rem' }}>
-              <li>الذكاء: يتمتع بذكاء حاد، ويُعرف بقدرته على التخطيط والمراوغة، خصوصًا أثناء الصيد.</li>
-              <li>القوة: يتميز بجسم قوي يمكنه من ملاحقة الفريسة والتغلب عليها.</li>
-              <li>الولاء: يعيش في جماعات منظمة ويُظهر ولاءً كبيرًا لأسرته، ويعتني بصغاره.</li>
-              <li>الشجاعة: لا يخاف بسهولة، ويُعرف بمواجهته للتهديدات إذا لزم الأمر.</li>
-              <li>الكرامة: لا يأكل الجيفة غالبًا، ويفضّل الصيد على التسوّل أو التطفل.</li>
-              <li>الحذر: لا يقترب من البشر بسهولة، ويتصرف بحذر شديد عند استكشاف بيئته.</li>
-              <li>الحرية: يحب العيش في البرية، ولا يتحمّل القيود، لذا من الصعب ترويضه.</li>
-              <li>الاستقلالية: يمكنه الاعتماد على نفسه في الصيد والبقاء حتى لو انفصل عن القطيع.</li>
-            </ul>
-            <p>هذه صفاته تعكس شركتنا تمامًا، فلا يوجد لوجو أفضل من هذا.</p>
-          </div>
-        </div>
-
-        {/* Cards on the left */}
-        <div className={`cards-container ${darkMode ? 'dark-mode' : ''}`}>
-          {services.slice(0, 3).map((service, index) => (
-            <motion.div
-              key={service.name}
-              className="card-item mb-3"
-              initial={{ x: '100vw' }}
-              animate={{ x: 0 }}
-              transition={{ delay: index * 0.3, type: 'spring', stiffness: 50 }}
-              onClick={() => navigate(service.path)}
-            >
-              <div className="card shadow-sm text-center h-100">
-                <div className="card-header">{service.icon} {service.name}</div>
-                <div className="card-body" style={{
-                  backgroundImage: `url(${service.image})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }} />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '1rem' }}>
+              <div
+                className="image-and-title-wrapper"
+                style={{
+                  textAlign: 'center',
+                  marginBottom: '20px',
+                  color: darkMode ? 'white' : 'black',
+                  fontWeight: 'bold',
+                }}
+              >
+                <h2
+                  style={{
+                    fontSize: 'clamp(1.5rem, 3vw, 2.5rem)', // تعديل الحجم ليكون متجاوبًا
+                    marginBottom: '0.5rem',
+                    animation: 'fadeIn 2s',
+                    fontWeight: '800',
+                    textAlign: 'center',
+                    color: darkMode ? '#fff' : '#000',
+                  }}
+                >
+                  <Typewriter
+                    options={{
+                      strings: [t('welcome_message'), t('choose_service')],
+                      autoStart: true,
+                      loop: true,
+                      delay: 75,
+                    }}
+                  />
+                </h2>
+                <h3
+                  style={{
+                    fontSize: 'clamp(1rem, 2.5vw, 1.8rem)', // تعديل الحجم ليكون متجاوبًا
+                    animation: 'fadeIn 2s 1s',
+                  }}
+                >
+                  {t('choose_service')}
+                </h3>
+                <button
+                  className="glow-button"
+                  onClick={() => {
+                    if (companyFeaturesRef.current) {
+                      smoothScrollTo(companyFeaturesRef.current, 1200);
+                    }
+                  }}
+                >
+                  {t('start_now')}
+                </button>
               </div>
-            </motion.div>
-          ))}
+              <motion.img
+                src={mainImage}
+                alt={t('main_visual_alt')}
+                className="central-image"
+                style={{
+                  width: '100%',
+                  maxWidth: '600px',
+                  height: 'auto',
+                  margin: '0 auto',
+                  borderRadius: '15px',
+                  boxShadow: '0 10px 20px rgba(0, 0, 0, 0.2)',
+                  transition: 'transform 0.3s ease-in-out',
+                }}
+                whileHover={{ scale: 1.05 }}
+                initial={{ y: 0 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 1, type: 'spring', stiffness: 50 }}
+              />
+            </div>
+
+            <div className={`cards-container ${darkMode ? 'dark-mode' : ''}`}>
+              {services.slice(0, 3).map((service, index) => (
+                <motion.div
+                  key={service.name}
+                  className="card-item mb-3"
+                  initial={{ x: '100vw' }}
+                  animate={{ x: 0 }}
+                  transition={{ delay: index * 0.3, type: 'spring', stiffness: 50 }}
+                  whileHover={{ scale: 1.1 }}
+                  onClick={() => navigate(service.path)}
+                  data-aos="fade-up"
+                >
+                  <div className="card shadow-sm text-center h-100" style={{ transition: 'transform 0.3s ease-in-out' }}>
+                    <div className="card-header" style={{ fontSize: 'clamp(1.1rem, 2vw, 1.5rem)', fontWeight: 'bold' }}>
+                      {service.icon}{' '}
+                      <span style={{ display: 'inline-block', minWidth: 80 }}>
+                        {service.name}
+                      </span>
+                    </div>
+                    <div
+                      className="card-body"
+                      style={{
+                        backgroundImage: `url(${service.image})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        borderRadius: '10px',
+                        transition: 'transform 0.3s ease-in-out',
+                      }}
+                    />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          <div className="text-section"></div>
+
+          <div
+            className="parent-section"
+            style={{ marginTop: '3rem' }}
+            ref={featuresRef}
+          >
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: window.innerWidth < 900 ? 'column' : 'row',
+                gap: '2.5rem',
+                justifyContent: 'center',
+                alignItems: 'stretch',
+                width: '100%',
+                maxWidth: 1200,
+                margin: '0 auto'
+              }}
+            >
+              <div
+                ref={companyFeaturesRef}
+                style={{
+                  flex: 1,
+                  background: darkMode ? '#23272f' : '#fff',
+                  borderRadius: '16px',
+                  padding: 'clamp(1.2rem, 2vw, 2.2rem)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  border: darkMode ? '1px solid #333' : '1px solid #e6e6e6',
+                  minWidth: 260
+                }}>
+                <div style={{
+                  background: darkMode ? '#23272f' : '#f3f6fa',
+                  borderRadius: '10px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
+                  padding: 'clamp(0.5rem, 1vw, 1.2rem)',
+                  fontSize: 'clamp(1.05rem, 1.5vw, 1.2rem)',
+                  fontWeight: 'bold',
+                  color: darkMode ? '#fff' : '#222',
+                  textAlign: 'center',
+                  marginBottom: 18
+                }}>
+                  <DynamicText />
+                </div>
+                <div style={{
+                  fontWeight: 'bold',
+                  color: '#111',
+                  fontSize: 'clamp(1.05rem, 1.5vw, 1.2rem)',
+                  textAlign: 'center',
+                  marginBottom: 28,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8
+                }}>
+                  <span>{t('company_aim')}</span>
+                  <FaStar style={{ color: '#ffc107', fontSize: '1.2em', marginRight: 4 }} />
+                </div>
+                <ul style={{
+                  margin: 0,
+                  paddingRight: 18,
+                  fontSize: 'clamp(1rem, 1.3vw, 1.18rem)',
+                  lineHeight: 2,
+                  color: darkMode ? '#e0e0e0' : '#333'
+                }}>
+                  <li>{t('feature_1')}</li>
+                  <li>{t('feature_2')}</li>
+                  <li>{t('feature_3')}</li>
+                  <li>{t('feature_4')}</li>
+                </ul>
+              </div>
+
+              <div
+                style={{
+                  width: '2px',
+                  background: darkMode ? '#444' : '#d1d1d1',
+                  margin: window.innerWidth < 900 ? '2rem auto' : '0 1.5rem',
+                  borderRadius: '1px',
+                  alignSelf: 'center',
+                  height: window.innerWidth < 900 ? '2px' : '90%',
+                  minHeight: window.innerWidth < 900 ? 0 : 180,
+                  display: window.innerWidth < 900 ? 'none' : 'block'
+                }}
+              />
+
+              <div style={{
+                flex: 1,
+                background: darkMode ? '#23272f' : '#fff',
+                borderRadius: '16px',
+                padding: 'clamp(1.2rem, 2vw, 2.2rem)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                border: darkMode ? '1px solid #333' : '1px solid #e6e6e6',
+                minWidth: 260
+              }}>
+                <h5 style={{
+                  fontWeight: 'bold',
+                  marginBottom: '1rem',
+                  color: darkMode ? '#fff' : '#222',
+                  textAlign: 'center',
+                  fontSize: 'clamp(1.2rem, 2vw, 1.7rem)',
+                  letterSpacing: '1px'
+                }}>
+                  <span role="img" aria-label="wolf" style={{ fontSize: '1.3em', marginLeft: 6 }}></span>
+                  {t('why_wolf_logo')}
+                </h5>
+                <ul style={{
+                  margin: 0,
+                  paddingRight: 18,
+                  fontSize: 'clamp(1rem, 1.3vw, 1.18rem)',
+                  lineHeight: 2,
+                  color: darkMode ? '#e0e0e0' : '#333'
+                }}>
+                  <li>{t('wolf_trait_1')}</li>
+                  <li>{t('wolf_trait_2')}</li>
+                  <li>{t('wolf_trait_3')}</li>
+                  <li>{t('wolf_trait_4')}</li>
+                  <li>{t('wolf_trait_5')}</li>
+                  <li>{t('wolf_trait_6')}</li>
+                </ul>
+                <p style={{
+                  marginTop: '1rem',
+                  fontWeight: 'bold',
+                  color: '#007bff',
+                  textAlign: 'center',
+                  fontSize: 'clamp(1rem, 1.3vw, 1.15rem)'
+                }}>
+                  {t('wolf_traits_reflect_company')}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

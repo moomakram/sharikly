@@ -1,0 +1,31 @@
+.glow-button {
+  background: linear-gradient(90deg, #ff8a00, #e52e71);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(255, 138, 0, 0.8), 0 0 20px rgba(229, 46, 113, 0.8);
+  transition: all 0.3s ease-in-out;
+}
+
+.glow-button:hover {
+  box-shadow: 0 0 20px rgba(255, 138, 0, 1), 0 0 30px rgba(229, 46, 113, 1);
+  transform: scale(1.1);
+}
+
+.features-section ul {
+    list-style: none; /* إلغاء النقط الافتراضية */
+    padding: 0;
+}
+
+.features-section li {
+    position: relative;
+    text-align: right; /* بما أن النص عربي */
+    padding-left: 1em;
+}
+
+.features-section li::after {
+    content: " •";  /* إضافة نقطة في نهاية العنصر */
+    /* يمكنك تعديل المسافات حسب الحاجة */
+}

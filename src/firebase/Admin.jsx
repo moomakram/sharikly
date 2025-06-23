@@ -1,7 +1,6 @@
 // src/pages/Admin.jsx
 import React, { useEffect, useState } from "react";
-import { db } from "../firebase";
-import {
+import { db, auth, storage } from '../firebase';import {
   collection,
   query,
   orderBy,

@@ -1,0 +1,9 @@
+/* إظهار القائمة عند وجود الصنف open */
+#languageDropdown.open {
+  display: block;
+}
+
+/* إخفاء القائمة افتراضياً */
+#languageDropdown {
+  display: none;
+}
